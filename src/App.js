@@ -1,25 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+// App.js
+import React, { useState, useEffect } from 'react';
+import TaskForm from './Taskform';
+import TaskList from './TaskList';
 
-function App() {
+const App = () => {
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/tasks');
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  const addTask = async (newTask) => {
+    try {
+      const response = await fetch('http://localhost:5000/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ task: newTask }),
+      });
+
+      if (response.ok) {
+        console.log('Task added successfully!');
+        fetchTasks(); // Fetch updated tasks after adding a new task
+      } else {
+        console.error('Failed to add task.');
+      }
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Task Manager</h1>
+      <TaskForm onAddTask={addTask} />
+      <TaskList tasks={tasks.map((task) => task.task)} />
     </div>
   );
-}
+};
 
 export default App;
